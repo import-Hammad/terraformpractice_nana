@@ -1,5 +1,12 @@
+<<<<<<< HEAD
 *.pem
 *.tfvars
 *.tfstate
 *.tfstate.backup
 .terraform/
+=======
+.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfvars
+>>>>>>> 29f0f8c45934d2313060f7b47e4416fdc9ccc196

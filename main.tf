@@ -4,40 +4,48 @@ provider "aws" {
 }
 
 variable "region"{}
-variable "vpc_cidr_bock"{}
-variable "subnet_cidr_block"{}
-variable "avalability_zone"{}
-variable "env_prefix"{}
+variable "cidr_block"{
+    type = list(string)
+}
+variable "environment" {}
 
-
-resource "aws_vpc" "my_app_vpc"{
-    cidr_block = var.vpc_cidr_bock
+resource "aws_vpc" "my_dev_vpc"{
+    cidr_block = var.cidr_block[0]
     tags = {
-        Name = "${var.env_prefix}-vpc"
+        Name = var.environment
     }
     
 }
 
 resource "aws_subnet" "my_dev_subnet_1" {
-    vpc_id = aws_vpc.my_app_vpc.id
-    cidr_block = var.subnet_cidr_block
+    vpc_id = aws_vpc.my_dev_vpc.id
+    cidr_block = var.cidr_block[1]
     availability_zone = "us-east-1a"
     tags = {
-        Name = "${var.env_prefix}-subnet-1"
-        
+        Name = "development-subnet-1"
+        vpc_env = "dev"
     }
 }
 
-resource "aws_route_table" "myapp_route_table"{
-    vpc_id = aws_vpc.my_app_vpc.id
-    route {
-        cidr_block = "0.0.0.0/0"
-        gateway_id = aws_internet_gateway.myapp_igw.id
-    }
+data "aws_vpc" "existing_vpc" {
+    default = true
+}
+
+resource "aws_subnet" "dev-subnet-2" {
+    vpc_id            = data.aws_vpc.existing_vpc.id
+    cidr_block        = "172.31.96.0/20"   # ✅ fixed
+    availability_zone = "us-east-1c"        # ✅ fixed
     tags = {
-        Name = "${var.env_prefix}-rtb"
+        Name = "subnet-2-dev"
     }
 }
 
 
 
+output "dev-vpc-id" {
+    value = aws_vpc.my_dev_vpc.id
+}
+
+output "dev-subnet-id" {
+    value = aws_subnet.my_dev_subnet_1.id
+}
