@@ -28,6 +28,13 @@ resource "aws_subnet" "my_dev_subnet_1" {
     }
 }
 
+resource "aws_internet_gateway" "myapp_igw"{
+    vpc_id = aws_vpc.my_app_vpc.id
+    tags = {
+        Name = "${var.env_prefix}-igw"
+    }
+}
+
 resource "aws_route_table" "myapp_route_table"{
     vpc_id = aws_vpc.my_app_vpc.id
     route {
