@@ -11,6 +11,7 @@ variable "env_prefix"{}
 variable "myip" {}
 variable "instance_type" {}
 variable "public_key_location" {}
+variable "private_key_location" {}
 
 
 resource "aws_vpc" "my_app_vpc"{
@@ -131,8 +132,28 @@ resource "aws_instance" "myapp-server" {
     associate_public_ip_address = true
     key_name = aws_key_pair.ansible-key.key_name
 
-    user_data = file("entry-script.sh")
-    user_data_replace_on_change = true
+   # user_data = file("entry-script.sh")
+    #user_data_replace_on_change = true
+
+        connection {
+        type = "ssh"
+        host = self.public_ip
+        user = "ec2-user"
+        private_key = file(var.private_key_location)
+    }
+
+    provisioner "file" {
+        source      = "entry-script.sh"
+        destination = "/home/ec2-user/entryscript.sh"
+    }
+
+    provisioner "remote-exec" {
+        script = "entry-script.sh"
+    }
+
+    provisioner "local-exec" {
+        command = "echo ${self.public_ip} > output.txt"
+    }
 
     tags = {
         Name = "${var.env_prefix}-server"
